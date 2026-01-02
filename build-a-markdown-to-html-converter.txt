@@ -1,0 +1,139 @@
+** start of index.html **
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown to HTML Converter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Markdown to HTML Converter</h1>
+
+    <textarea id="markdown-input" placeholder="Enter Markdown here..."></textarea>
+
+    <div id="container">
+        <div>
+            <h3>Raw HTML Output</h3>
+            <pre id="html-output"></pre>
+        </div>
+        <div>
+            <h3>Preview</h3>
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+** end of index.html **
+
+** start of styles.css **
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+#markdown-input {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 20px;
+}
+
+#html-output, #preview {
+    width: 100%;
+    min-height: 100px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f9f9f9;
+    white-space: pre-wrap;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+@media (min-width: 600px) {
+    #container {
+        flex-direction: row;
+    }
+    #html-output, #preview {
+        min-height: 200px;
+    }
+}
+
+
+** end of styles.css **
+
+** start of script.js **
+
+function convertMarkdown() {
+    const input = document.getElementById("markdown-input").value;
+    const htmlOutput = document.getElementById("html-output");
+    const preview = document.getElementById("preview");
+
+    htmlOutput.textContent = ''; // Clear previous HTML
+    preview.innerHTML = '';      // Clear previous preview
+
+    const lines = input.split('\n');
+    let html = '';
+
+    lines.forEach(line => {
+        let convertedLine = line;
+
+        // Headings
+        if (/^### (.+)/.test(convertedLine)) {
+            convertedLine = convertedLine.replace(/^### (.+)/, '<h3>$1</h3>');
+        } else if (/^## (.+)/.test(convertedLine)) {
+            convertedLine = convertedLine.replace(/^## (.+)/, '<h2>$1</h2>');
+        } else if (/^# (.+)/.test(convertedLine)) {
+            convertedLine = convertedLine.replace(/^# (.+)/, '<h1>$1</h1>');
+        }
+        // Blockquotes
+        else if (/^>\s+(.+)/.test(convertedLine)) {
+            convertedLine = convertedLine.replace(/^>\s+(.+)/, '<blockquote>$1</blockquote>');
+        }
+
+        // Bold (**text** or __text__)
+        convertedLine = convertedLine.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+
+        // Italic (*text* or _text_)
+        convertedLine = convertedLine.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+
+        // Images ![alt](src)
+        convertedLine = convertedLine.replace(/!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2">');
+
+        // Links [text](url)
+        convertedLine = convertedLine.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+
+        // Append to raw HTML string
+        html += convertedLine;
+
+        // Append each converted line as DOM element
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = convertedLine;
+        while (tempDiv.firstChild) {
+            preview.appendChild(tempDiv.firstChild);
+        }
+    });
+
+    htmlOutput.textContent = html; // Show raw HTML
+    return html;
+}
+
+// Input event listener
+document.getElementById("markdown-input").addEventListener("input", convertMarkdown);
+
+
+** end of script.js **
+
